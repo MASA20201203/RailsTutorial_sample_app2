@@ -1,0 +1,32 @@
+name: RubyonRails
+
+on: [push]
+
+jobs:
+  build:
+    name: RubyonRails-StartChecker
+    runs-on: ubuntu-latest
+    steps:
+      - name: CheckOut
+        uses: actions/checkout@v2
+      - name: Ruby Setup
+        uses: ruby/setup-ruby@v1
+        with:
+          ruby-version: 2.7.2
+      - name: Yarn Install
+        run: |
+          yarn install --check-files
+      - name: PostgreSQL Setup
+        run: |
+          sudo apt install -y postgresql postgresql-contrib libpq-dev && sudo apt install
+          sudo service postgresql start
+          sudo -u postgres createuser runner -s
+      - name: Bundle Install
+        run: |
+          bundle install
+      - name: Rails Setup
+        run: bundle exec rails db:migrate:reset
+      - name: Rails Test
+        run: bundle exec rails test
+      - name: Rails Start
+        run: bundle exec rails s -d
